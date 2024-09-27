@@ -68,7 +68,7 @@ CREATE TABLE users (
     "tags": ["tag1", "tag2"],
     "created_at": "ISODate",
     "updated_at": "ISODate",
-    "published": true, // 是否已發佈
+    "published": true, 
     "comments": [
         {
             "comment_id": "ObjectId",
@@ -314,6 +314,7 @@ PostgreSQL 是一個功能強大且靈活的資料庫系統，其架構設計基
 #### 4. **實體-關係圖 (Entity-Relationship Diagram, ERD)**
    - 繪製 ERD 圖表，這是一個圖形化的工具，用於表示資料實體和它們之間的關聯。實體-關係圖有助於可視化資料結構，確保每個資料實體及其之間的關聯都清楚定義。
    - 在設計 ERD 時，還需要考慮每個實體的主鍵和外鍵，確保它們之間的關係正確反映在圖中。
+     
 ![ERD](/image/er.png)
 
 #### 5. **資料正規化 (Normalization)**
