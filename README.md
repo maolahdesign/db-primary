@@ -51,7 +51,7 @@ CREATE TABLE users (
     "username": "admin",
     "password": "hashed_password",
     "email": "admin@example.com",
-    "role": "admin", // 角色：admin, editor, viewer
+    "role": "admin", 
     "created_at": "ISODate",
     "updated_at": "ISODate"
 }
@@ -64,7 +64,7 @@ CREATE TABLE users (
     "_id": "ObjectId",
     "title": "文章標題",
     "content": "文章內容",
-    "author_id": "ObjectId", // 參考 users 集合的 _id
+    "author_id": "ObjectId",
     "tags": ["tag1", "tag2"],
     "created_at": "ISODate",
     "updated_at": "ISODate",
@@ -108,11 +108,11 @@ CREATE TABLE users (
 ```json
 {
     "_id": "ObjectId",
-    "user_id": "ObjectId", // 參考 users 集合的 _id
-    "action": "create_post", // 操作類型
+    "user_id": "ObjectId",
+    "action": "create_post", 
     "timestamp": "ISODate",
     "details": {
-        "post_id": "ObjectId", // 可選，對應的文章 ID
+        "post_id": "ObjectId", 
         "changes": "更改內容"
     }
 }
