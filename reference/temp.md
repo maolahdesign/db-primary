@@ -51,7 +51,7 @@ CREATE TABLE users (
     "username": "admin",
     "password": "hashed_password",
     "email": "admin@example.com",
-    "role": "admin", // 角色：admin, editor, viewer
+    "role": "admin", 
     "created_at": "ISODate",
     "updated_at": "ISODate"
 }
@@ -64,11 +64,11 @@ CREATE TABLE users (
     "_id": "ObjectId",
     "title": "文章標題",
     "content": "文章內容",
-    "author_id": "ObjectId", // 參考 users 集合的 _id
+    "author_id": "ObjectId",
     "tags": ["tag1", "tag2"],
     "created_at": "ISODate",
     "updated_at": "ISODate",
-    "published": true, // 是否已發佈
+    "published": true, 
     "comments": [
         {
             "comment_id": "ObjectId",
@@ -108,11 +108,11 @@ CREATE TABLE users (
 ```json
 {
     "_id": "ObjectId",
-    "user_id": "ObjectId", // 參考 users 集合的 _id
-    "action": "create_post", // 操作類型
+    "user_id": "ObjectId",
+    "action": "create_post", 
     "timestamp": "ISODate",
     "details": {
-        "post_id": "ObjectId", // 可選，對應的文章 ID
+        "post_id": "ObjectId", 
         "changes": "更改內容"
     }
 }
@@ -314,6 +314,8 @@ PostgreSQL 是一個功能強大且靈活的資料庫系統，其架構設計基
 #### 4. **實體-關係圖 (Entity-Relationship Diagram, ERD)**
    - 繪製 ERD 圖表，這是一個圖形化的工具，用於表示資料實體和它們之間的關聯。實體-關係圖有助於可視化資料結構，確保每個資料實體及其之間的關聯都清楚定義。
    - 在設計 ERD 時，還需要考慮每個實體的主鍵和外鍵，確保它們之間的關係正確反映在圖中。
+     
+![ERD](image/er.png)
 
 #### 5. **資料正規化 (Normalization)**
    - 對資料結構進行正規化，將資料分解為多個表格，以減少資料冗餘並確保資料的一致性。常見的正規化過程包括將資料調整到一階正規化 (1NF)、二階正規化 (2NF) 和三階正規化 (3NF)。
@@ -343,77 +345,255 @@ PostgreSQL 是一個功能強大且靈活的資料庫系統，其架構設計基
 資料庫設計是一個複雜的過程，前期準備工作至關重要。從需求分析到資料正規化，再到技術選型和效能、安全考量，這些步驟確保資料庫設計不僅滿足業務需求，還具備良好的擴展性和效能。
 
 ---
-## 資料型別
+## 定義資料結構
+在關連式資料庫中，原始資料儲存在表格之中，所以在這一章裡，主要說明表格如何建立及調整，以及有什麼樣的功能可以操控所存放的資料。
+
+### 資料型別
 PostgreSQL 支援豐富的資料型別，涵蓋數字、文字、日期時間、二進制等。以下是常見的資料型別分類及示例：
 
-### 1. **數字型別**
-   - **整數類型**
-     - `smallint`: 小範圍的整數，範圍 -32,768 到 32,767（2 bytes）。
-     - `integer` 或 `int`: 標準範圍的整數，範圍 -2,147,483,648 到 2,147,483,647（4 bytes）。
-     - `bigint`: 大範圍的整數，範圍 -9,223,372,036,854,775,808 到 9,223,372,036,854,775,807（8 bytes）。
-   
-   - **浮點數類型**
-     - `real`: 單精度浮點數（4 bytes）。
-     - `double precision`: 雙精度浮點數（8 bytes）。
-   
-   - **精確數字型別**
-     - `numeric(p, s)` 或 `decimal(p, s)`: 精確的數字，`p` 為總位數，`s` 為小數位數。適合金融運算。
+#### 1. **數字型別**
+- **整數類型**
+ - `smallint`: 小範圍的整數，範圍 -32,768 到 32,767（2 bytes）。
+ - `integer` 或 `int`: 標準範圍的整數，範圍 -2,147,483,648 到 2,147,483,647（4 bytes）。
+ - `bigint`: 大範圍的整數，範圍 -9,223,372,036,854,775,808 到 9,223,372,036,854,775,807（8 bytes）。
+```
+select 1.123456789::integer as num1;
+select 1.123456789::int4 as num2;
+select 1.123456789::int8 as num3;
+select 1.123456789::bigint as num4;
+```
+- **浮點數類型**
+ - `real`: 單精度浮點數（4 bytes）6 decimal digits。
+ - `double precision`: 雙精度浮點數（8 bytes）15 decimal digits。
+ ```
+ select 1.123456789::real as num1;
+ select 1.123456789::double precision as num2;
+ ```
+ 試試看
+ ```
+ select sum(0.1::real) from generate_series(1,10);
+ ```
+ 新函數：
+ - generate_series(1,10)：這是一個 PostgreSQL 內建函數，用來生成一個從 1 到 10 的數字序列；該序列會產生 10 行的結果。
+ ```
+ SELECT * FROM generate_series(1, 10);
+ ```
 
-   - **序列和自動遞增型別**
-     - `serial`: 自動遞增整數，等同於 `integer` 加上自動生成的序列。
-     - `bigserial`: 自動遞增的大整數，等同於 `bigint` 加上自動生成的序列。
+- **精確數字型別**
+ - `numeric(p, s)` 或 `decimal(p, s)`: 精確的數字，`p` 為總位數，`s` 為小數位數。適合金融運算。
+ ```
+ select 1.123456789::numeric(10,1) as num;
+ select 1.123456789::numeric(10,5) as num;
+ select 1.123456789::numeric(10,9) as num;
+ ```
+ 試試看
+ ```
+ select sum(0.1::numeric(2,2)) from generate_series(1,10);
+ ```
+ 
+ 1. create table
+ ```
+ CREATE TABLE table_numbers(
+   col_numeric numeric(20, 5),
+   col_real real,
+   col_bouble double precision
+ );
+ ```
+ 2. 新增幾筆資料
+ ```
+ INSERT INTO table_numbers (col_numeric, col_real, col_bouble) VALUES
+ (.8,.8,.8),
+ (3.13579, 3.13579, 3.13579),
+ (7.0123456789, 7.0123456789, 7.0123456789);
+ ```
+ 3. 確認結果
 
-### 2. **字串型別**
-   - **可變長度字串**
-     - `varchar(n)`: 可變長度字串，最多 `n` 個字元。
-     - `text`: 不限制長度的字串，通常用於儲存較長的文字。
+- **序列和自動遞增型別**
+ - `serial`: 自動遞增整數，等同於 `integer` 加上自動生成的序列。
+ - `bigserial`: 自動遞增的大整數，等同於 `bigint` 加上自動生成的序列。
 
-   - **固定長度字串**
-     - `char(n)`: 固定長度字串，不足部分會自動填充空格。
+#### 2. **字串型別**
+- **可變長度字串**
+ - `varchar(n)`: 可變長度字串，最多 `n` 個字元。
+ - `text`: 不限制長度的字串，通常用於儲存較長的文字。
 
-### 3. **布林型別**
-   - `boolean`: 布林型別，取值為 `TRUE`, `FALSE`, 或 `NULL`。
+- **固定長度字串**
+ - `character(n)/ char(n)`: 固定長度字串，不足部分會自動填充空格。
 
-### 4. **日期與時間型別**
-   - `date`: 只包含日期（年、月、日），格式為 `YYYY-MM-DD`。
-   - `time`: 只包含時間（時、分、秒），格式為 `HH:MI:SS`。
-   - `timestamp`: 包含日期和時間，無時區信息，格式為 `YYYY-MM-DD HH:MI:SS`。
-   - `timestamptz`: 包含日期和時間，有時區信息。
-   - `interval`: 時間間隔，表示時間段（例如，1 天或 2 小時）。
+試試看
 
-### 5. **二進制資料型別**
-   - `bytea`: 用於存儲二進制資料，例如圖像或文件的數據。
+ 1. create table
+ ```
+ create table new_tags (
+ pk integer not null primary key,
+ tag char(10)
+ );
+ ```
+ 2. 新增兩筆資料
+ ```
+ insert into new_tags values (1,'first tag');
+ insert into new_tags values (2,'sec tag');
+ ```
+ 3. 使用幾個新函數：
+  - ** length()**：這個函數用來計算字串的長度，計算的是字元數，具體根據 tag 中的字元編碼來確定長度。
+  - ** octet_length(p)**：計算字串的位元組（byte）數，也就是該字串在資料庫中實際佔用的位元組數量。
 
-### 6. **列舉型別**
-   - `enum`: 列舉型別，用於定義一組可能的值。例如：
+  ```
+  select pk,tag,length(tag),octet_length(tag) from new_tags;
+  ```
+ ##### 換你
+  1. 刪除 new_tags
+  2. 建立 new_tags
+  ```
+  pk integer not null primary key,
+  tag varchar(10)
+  ```
+  3. 新增幾筆資料
+  4. 重複與之前相同的查詢
 
-     ```sql
-     CREATE TYPE mood AS ENUM ('happy', 'sad', 'neutral');
-     ```
+#### 3. **布林型別**
+- `boolean`: 布林型別，取值為 `TRUE`, `FALSE`, 或 `NULL`。
+- TRUE, 'true', 't', 'y', 'yes', '1'
+- '11', '00' ?
 
-### 7. **JSON 與 XML 型別**
-   - `json`: 存儲 JSON 格式的數據，但沒有強制檢查格式正確性。
-   - `jsonb`: 二進制 JSON，存儲結構化的 JSON，支援更高效的查詢和索引。
-   - `xml`: 用於存儲 XML 資料。
+ 1. create table
+ ```
+ create table table_boolean (
+     pk SERIAL primary key,
+     user_on_line boolean
+ );
+ ```
+ 2. 新增五筆記錄
+ 
+ 3. 修改狀態
+ ```
+ UPDATE table_boolean set user_on_line = FALASE where pk=1;
+ ```
+ 4. 試試看
+ - 將 user_on_line 全變更為 FALSE
+ - 找出目前登入的使用者是哪幾個（ where user_on_line=1 ）
+ - WHERE user_on_line or WHERE NOT user_on_line
+ - 設定初始值
+ ```
+ ALTER TABLE table_boolean
+ ALTER COLUMN user_on_line
+ SET DEFAULT '0';
+ ```
 
-### 8. **陣列型別**
-   - PostgreSQL 支援陣列類型，任何資料型別都可以存儲為陣列。例如：
+#### 4. **日期與時間型別**
+- `date`: 只包含日期（年、月、日），格式為 `YYYY-MM-DD`。
+- `time`: 只包含時間（時、分、秒），格式為 `HH:MI:SS`。
+- `timestamp`: 包含日期和時間，無時區信息，格式為 `YYYY-MM-DD HH:MI:SS`。
+- `timestamptz`: 包含日期和時間，有時區信息。
+- `interval`: 時間間隔，表示時間段（例如，1 天或 2 小時）。
 
-     ```sql
-     integer[]  -- 整數陣列
-     text[]     -- 字串陣列
-     ```
+    1. 設定日期
 
-   - 陣列可以包含多維結構，例如 `integer[3][3]` 表示三維矩陣。
+    ```
+    select '12-31-2020'::date;
+    ```
+    2. 更好的設定方式
+    > ** to_date() 函數**：將給定的字串轉換為日期。
 
-### 9. **UUID 型別**
-   - `uuid`: 通用唯一識別碼，用於儲存 128 位的 UUID 資料。
+    ```
+    select to_date('04/10/2024','dd/mm/yyyy') ;
+    ```
+    3. 新增資料表欄位
+    ```
+    ALTER TABLE table_boolean
+    ADD created_on timestamp with time zone DEFAULT CURRENT_TIMESTAMP;
+    ```
+    4. 調整日期呈現格式
+    ```
+    select pk,to_char(created_on,'dd-mm-yyyy') as created_on
+    from table_boolean;
+    ```
+> **to_char() 函數**： 用於將數值或日期型別轉換為指定格式的字串。
+> to_char() 函數是 to_date() 函數的反函數。
 
-### 10. **CIDR 和 INET 型別**
+
+#### 5. **二進制資料型別**
+- `bytea`: 用來儲存非文字的二進制數據，例如圖片、音訊、視頻、檔案、或其他非結構化數據。
+
+#### 6. **列舉型別**
+- `enum`: 列舉型別，用於定義一組可能的值。例如：
+
+ ```sql
+ CREATE TYPE mood AS ENUM ('happy', 'sad', 'neutral');
+ ```
+
+#### 7. **JSON 與 XML 型別**
+- `json`: 存儲 JSON 格式的數據，但沒有強制檢查格式正確性。
+- `jsonb`: 二進制 JSON，存儲結構化的 JSON，支援更高效的查詢和索引。
+- `xml`: 用於存儲 XML 資料。
+
+#### 8. **陣列型別**
+- PostgreSQL 支援陣列類型，任何資料型別都可以存儲為陣列。例如：
+
+ ```sql
+ integer[]  -- 整數陣列
+ text[]     -- 字串陣列
+ ```
+
+- 陣列可以包含多維結構，例如 `integer[3][3]` 表示三維矩陣。
+
+ 1. create table 
+ ```
+ CREATE TABLE table_array(
+   id SERIAL,
+   username VARCHAR(64),
+   phones text []
+ );
+ ```
+ 2. 新增幾筆紀錄
+ ```
+ INSERT INTO table_array (username, phones)
+ VALUES ('troy', ARRAY['(886)981-567-890','(886)933-567-890']);
+ ```
+ 3. 確認結果
+ 4. 取得每個人的第一筆電話紀錄
+ ```
+ phone[n]
+ select username,phones[1] from table_array;
+ ```
+
+#### 9. **UUID 型別**
+- **`uuid`**: 通用唯一識別碼(universal unique identifier)，用於儲存 128 位的 UUID 資料。
+- ex: **35f61124-81a9-11ef-b198-acde48001122**
+
+ 1. enable third part UUID extensions: uuid-ossp
+ ```
+ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+ ```
+ 2. generate a uuid
+ ```
+ SELECT uuid_generate_v1();
+ ```
+ 3. CREATE TABLE
+ ```
+ create table table_uuid (
+     pk UUID DEFAULT uuid_generate_v1(),
+     product_name VARCHAR(100) not null
+ );
+ ```
+ 4. 新增幾筆紀錄
+ ```
+ INSERT INTO table_uuid (product_name) VALUES ('ff');
+ ```
+ 5. 將 pk 修改成 uuid_generate_v4()
+ ```
+ ALTER TABLE table_uuid
+ ALTER COLUMN pk
+ SET DEFAULT uuid_generate_v1();
+ ```
+ 6. 新增幾筆紀錄
+       
+
+#### 10. **CIDR 和 INET 型別**
    - `cidr`: 用於存儲 IP 網段。
    - `inet`: 用於存儲 IP 位址（IPv4 或 IPv6）。
 
-### 11. **點與幾何型別**
+#### 11. **點與幾何型別**
    - `point`: 二維平面上的一個點，格式為 `(x, y)`。
    - `line`: 無限直線。
    - `lseg`: 線段。
@@ -422,7 +602,7 @@ PostgreSQL 支援豐富的資料型別，涵蓋數字、文字、日期時間、
    - `polygon`: 多邊形。
    - `circle`: 圓形。
 
-### 12. **範圍型別**
+#### 12. **範圍型別**
    - `int4range`: 32 位整數範圍。
    - `int8range`: 64 位整數範圍。
    - `numrange`: 數字範圍。
@@ -430,10 +610,10 @@ PostgreSQL 支援豐富的資料型別，涵蓋數字、文字、日期時間、
    - `tstzrange`: 有時區的時間範圍。
    - `daterange`: 日期範圍。
 
-### 13. **金錢型別**
+#### 13. **金錢型別**
    - `money`: 用於存儲貨幣金額，包含小數位。
 
-## PostgreSQL 資料型別說明
+#### PostgreSQL 資料型別說明
 
 | 資料型別             | 描述           | 長度限制                                    | 預設值  | 說明                                                        |
 | -------------------- | -------------- | ------------------------------------------- | ------- | ----------------------------------------------------------- |
@@ -463,20 +643,72 @@ PostgreSQL 支援豐富的資料型別，涵蓋數字、文字、日期時間、
 * 上述表格僅列出常見的資料型別，PostgreSQL 提供更多其他資料型別。
 * 更多詳細資訊，請參考 PostgreSQL 官方文件: [postgresql.org](https://www.postgresql.org/docs/)
 
----
 
 這些是 PostgreSQL 中常見的資料型別，提供了靈活的數據處理和儲存選擇。你可以根據具體應用的需求選擇最合適的型別來構建資料表。
 
-## 定義資料結構
-在關連式資料庫中，原始資料儲存在表格之中，所以在這一章裡，主要說明表格如何建立及調整，以及有什麼樣的功能可以操控所存放的資料。
+---
 
+## 使用 PostgreSQL 線上教學網站會員管理及課程管理資料表規劃
+完成線上教學網站的會員管理及課程管理資料表(schema)：
+
+**1. 會員資料表 (users)**
+
+| 字段名稱 | 資料類型 | 說明 |
+|---|---|---|
+| id | SERIAL PRIMARY KEY | 會員唯一識別碼 |
+| username | VARCHAR(255) UNIQUE NOT NULL | 會員帳號 |
+| email | VARCHAR(255) UNIQUE NOT NULL | 會員電子郵件地址 |
+| password | VARCHAR(255) NOT NULL | 會員密碼 (建議使用哈希加密) |
+| name | VARCHAR(255) | 會員姓名 |
+| avatar | VARCHAR(255) | 會員頭像 URL |
+| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 會員註冊時間 |
+| updated_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 會員資料更新時間 |
+
+**2. 課程資料表 (courses)**
+
+| 字段名稱 | 資料類型 | 說明 |
+|---|---|---|
+| id | SERIAL PRIMARY KEY | 課程唯一識別碼 |
+| title | VARCHAR(255) NOT NULL | 課程標題 |
+| description | TEXT | 課程描述 |
+| category | VARCHAR(255) | 課程類別 |
+| price | DECIMAL(10,2) | 課程價格 |
+| instructor | VARCHAR(255) | 課程講師 |
+| image | VARCHAR(255) | 課程封面圖片 URL |
+| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 課程創建時間 |
+| updated_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 課程更新時間 |
+
+**3. 課程學員資料表 (enrollments)**
+
+| 字段名稱 | 資料類型 | 說明 |
+|---|---|---|
+| id | SERIAL PRIMARY KEY | 學員記錄唯一識別碼 |
+| user_id | INTEGER REFERENCES users(id) | 會員 ID |
+| course_id | INTEGER REFERENCES courses(id) | 課程 ID |
+| status | VARCHAR(255) | 學員狀態 (例如：已報名、已完成、未完成) |
+| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 學員記錄創建時間 |
+
+**4. 課程評論資料表 (reviews)**
+
+| 字段名稱 | 資料類型 | 說明 |
+|---|---|---|
+| id | SERIAL PRIMARY KEY | 評論唯一識別碼 |
+| user_id | INTEGER REFERENCES users(id) | 會員 ID |
+| course_id | INTEGER REFERENCES courses(id) | 課程 ID |
+| rating | INTEGER | 評分 (例如：1-5 星) |
+| comment | TEXT | 評論內容 |
+| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 評論創建時間 |
+
+**備註:**
+* 確保資料庫表結構和資料類型符合您的應用程式需求。
+* 使用安全措施保護敏感資料，例如密碼哈希加密。
 
 ---
-## 建立與管理資料庫
+## 資料庫正規化
 
 在設計一個教學網站的資料庫時，我們可以使用**PostgreSQL**，並遵循資料庫的**1NF（一階正規化）**、**2NF（二階正規化）** 和 **3NF（三階正規化）** 的規則來設計和優化資料表。以下是每個正規化階段的範例演進。
 
-### 範例背景：
+### 範例：
 假設我們設計一個教學網站，系統要記錄課程資訊、學生資訊以及學生的課程註冊情況。
 
 ### 1. **一階正規化（1NF）**
@@ -485,13 +717,11 @@ PostgreSQL 支援豐富的資料型別，涵蓋數字、文字、日期時間、
 #### 原始資料表（未正規化）：
 我們將所有課程、學生和註冊資訊放在一個表中，這會導致數據重複和結構不佳。
 
-```plaintext
 | StudentID | StudentName | CourseID | CourseName          | Instructor  | EnrollmentDate        |
 |-----------|-------------|----------|---------------------|-------------|-----------------------|
 | 1         | John Smith  | 101      | Web Development      | Jane Doe    | 2023-01-01            |
 | 1         | John Smith  | 102      | Database Systems     | John Carter | 2023-01-02            |
 | 2         | Alice Brown | 101      | Web Development      | Jane Doe    | 2023-01-05            |
-```
 
 在此表中：
 - 學生和課程的資訊重複。
@@ -512,12 +742,12 @@ CREATE TABLE Enrollments (
 );
 ```
 
-這樣就滿足了**1NF**，但仍然有很多數據冗餘（例如 `StudentName` 和 `CourseName` 重複）。
+這樣就滿足了 **1NF**，但仍然有很多數據冗餘（例如 `StudentName` 和 `CourseName` 重複）。
 
 ---
 
 ### 2. **二階正規化（2NF）**
-**2NF** 要求資料表滿足**1NF**，並且每個非主鍵屬性都完全依賴於**主鍵的全部**，不能僅依賴於部分主鍵。
+**2NF** 要求資料表滿足 **1NF**，並且每個**非主鍵屬性**都完全依賴於**主鍵的全部**，不能僅依賴於部分主鍵。
 
 在上面的 `Enrollments` 表中，`StudentName` 只依賴於 `StudentID`，而 `CourseName` 和 `Instructor` 只依賴於 `CourseID`，這些都是部分依賴。
 
@@ -558,7 +788,7 @@ CREATE TABLE Enrollments (
 ---
 
 ### 3. **三階正規化（3NF）**
-**3NF** 要求資料表滿足**2NF**，並且**非主鍵屬性不能依賴於其他非主鍵屬性**（即消除傳遞依賴）。
+**3NF** 要求資料表滿足 **2NF**，並且**非主鍵屬性不能依賴於其他非主鍵屬性**（即消除傳遞依賴）。
 
 在 `Courses` 表中，假設未來課程的講師 (`Instructor`) 可能會有更多信息（例如 Email 或 Office 地址），這可能會造成傳遞依賴。如果 `Instructor` 的資訊不僅依賴於 `CourseID`，而是依賴於 `Instructor` 自身，我們需要將講師的信息單獨提取到一個新表中。
 
@@ -623,6 +853,9 @@ JOIN Instructors i ON c.InstructorID = i.InstructorID;
 - 消除了數據冗餘。
 - 提高了數據完整性。
 - 容易進行數據更新和維護，避免數據異常情況（如不同記錄中相同學生的名字拼寫不同）。
+
+---
+## 安全性
 ## 命令列管理工具
 CREATE USER username WITH PASSWORD 'password';
 CREATE DATABASE dbname WITH OWNER 'username';
@@ -641,67 +874,6 @@ CREATE TABLE users(
     PRIMARY KEY(id)
 )
 ```
-## 使用 PostgreSQL 線上教學網站會員管理及課程管理資料表規劃
-
-完成線上教學網站的會員管理及課程管理資料表(schema)：
-
-**1. 會員資料表 (users)**
-
-| 字段名稱 | 資料類型 | 說明 |
-|---|---|---|
-| id | SERIAL PRIMARY KEY | 會員唯一識別碼 |
-| username | VARCHAR(255) UNIQUE NOT NULL | 會員帳號 |
-| email | VARCHAR(255) UNIQUE NOT NULL | 會員電子郵件地址 |
-| password | VARCHAR(255) NOT NULL | 會員密碼 (建議使用哈希加密) |
-| name | VARCHAR(255) | 會員姓名 |
-| avatar | VARCHAR(255) | 會員頭像 URL |
-| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 會員註冊時間 |
-| updated_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 會員資料更新時間 |
-
-**2. 課程資料表 (courses)**
-
-| 字段名稱 | 資料類型 | 說明 |
-|---|---|---|
-| id | SERIAL PRIMARY KEY | 課程唯一識別碼 |
-| title | VARCHAR(255) NOT NULL | 課程標題 |
-| description | TEXT | 課程描述 |
-| category | VARCHAR(255) | 課程類別 |
-| price | DECIMAL(10,2) | 課程價格 |
-| instructor | VARCHAR(255) | 課程講師 |
-| image | VARCHAR(255) | 課程封面圖片 URL |
-| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 課程創建時間 |
-| updated_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 課程更新時間 |
-
-**3. 課程學員資料表 (enrollments)**
-
-| 字段名稱 | 資料類型 | 說明 |
-|---|---|---|
-| id | SERIAL PRIMARY KEY | 學員記錄唯一識別碼 |
-| user_id | INTEGER REFERENCES users(id) | 會員 ID |
-| course_id | INTEGER REFERENCES courses(id) | 課程 ID |
-| status | VARCHAR(255) | 學員狀態 (例如：已報名、已完成、未完成) |
-| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 學員記錄創建時間 |
-
-**4. 課程評論資料表 (reviews)**
-
-| 字段名稱 | 資料類型 | 說明 |
-|---|---|---|
-| id | SERIAL PRIMARY KEY | 評論唯一識別碼 |
-| user_id | INTEGER REFERENCES users(id) | 會員 ID |
-| course_id | INTEGER REFERENCES courses(id) | 課程 ID |
-| rating | INTEGER | 評分 (例如：1-5 星) |
-| comment | TEXT | 評論內容 |
-| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 評論創建時間 |
-
-**備註:**
-* 確保資料庫表結構和資料類型符合您的應用程式需求。
-* 使用安全措施保護敏感資料，例如密碼哈希加密。
-
-
-
-## 圖形化管理工具
-## 安全性
-## SQL語言簡介
 - get last insert row or id.
 ## 備份、復原與特定點復原
 ## 日常的管理工作
