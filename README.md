@@ -24,6 +24,29 @@ CREATE TABLE users (
 );
 ```
 
+```
+NSERT INTO table_name VALUES (value1, value2, value3, ...);
+```
+
+```
+UPDATE table_name 
+set col_name = value 
+where rule;
+```
+
+```
+ALTER TABLE table_name
+add col_name type;
+
+ALTER TABLE table_name
+ALTER COLUMN col_name TYPE new_type;
+```
+
+```
+DROP TABLE table_name
+CASCADE;
+```
+
 #### NoSQL（MongoDB）數據結構
 ```json
 {
