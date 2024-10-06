@@ -532,13 +532,51 @@ select 1.123456789::bigint as num4;
 
 
 #### 5. **二進制資料型別**
-- `bytea`: 用來儲存非文字的二進制數據，例如圖片、音訊、視頻、檔案、或其他非結構化數據。
+- `bytea`: 用於儲存任意二進位資料。可以將任何類型的檔案，例如圖片、PDF、音訊、影片等，直接以其原始的二進位格式儲存到資料庫中。
+
+1. 建立表格
+```
+CREATE TABLE files (
+    id SERIAL PRIMARY KEY,
+    filename TEXT,
+    data bytea
+);
+```
+2. 新增資料
+```
+INSERT INTO files (filename, data) VALUES ('image.jpg', E'\\x42696E6172792064617461');
+```
 
 #### 6. **列舉型別**
-- `enum`: 列舉型別，用於定義一組可能的值。例如：
- ```sql
- CREATE TYPE mood AS ENUM ('happy', 'sad', 'neutral');
- ```
+- `enum`: ENUM (Enumeration，枚舉) 型別是一種使用者自定義的資料型別，用來表示一組預定義的值。這些值就像是標籤，用來代表不同的狀態、類別或選項。在 PostgreSQL 中，ENUM 型別提供了一種更安全、更易於管理的方式來儲存這些有限的選擇。
+
+為什麼使用 ENUM 型別？
+  - 資料完整性: 確保資料只包含預定義的值，減少資料輸入錯誤的可能性。
+  - 可讀性: 使用易於理解的文字表示資料，提高資料的可讀性。
+  - 索引效率: ENUM 型別的資料通常會被索引，提高查詢效率。
+  - 代碼維護: 減少硬編碼的值，提高代碼的可維護性。
+  
+1. 建立列舉型別
+```
+CREATE TYPE mood AS ENUM ('happy', 'sad', 'neutral');
+
+CREATE TYPE color AS ENUM ('red', 'green', 'blue');
+```
+2. 建立表單
+```
+CREATE TABLE products (
+id SERIAL PRIMARY KEY,
+name TEXT,
+color color
+);
+```
+3. 新增資料
+ 
+ENUM 型別的範例：
+- 使用者狀態: user_status AS ENUM ('active', 'inactive', 'deleted')
+- 產品類別: product_category AS ENUM ('electronics', 'clothing', 'food')
+- 性別: gender AS ENUM ('male', 'female', 'other')
+- 付款方式: payment_method AS ENUM ('credit_card', 'paypal', 'bank_transfer')
 
 #### 7. **JSON 與 XML 型別**
 - `json`: 存儲 JSON 格式的數據，但沒有強制檢查格式正確性。
@@ -624,7 +662,32 @@ select 1.123456789::bigint as num4;
    - `daterange`: 日期範圍。
 
 #### 13. **金錢型別**
-   - `money`: 用於存儲貨幣金額，包含小數位。
+- `money`: 專門用於儲存貨幣金額，它能夠精確地表示貨幣值，並考慮到不同貨幣的格式和精度。
+
+為什麼使用 money 型別？
+- 精確計算: 避免浮點數計算可能產生的精度問題，確保貨幣計算的準確性。
+- 格式化輸出: 可以根據不同的區域設定，自動格式化輸出貨幣值，例如加上貨幣符號、千分位分隔符等。
+- 內建貨幣功能: PostgreSQL 提供了許多內建函數，方便進行貨幣計算和比較。
+
+  1. 設定 lc_monetary 
+  這個設定參數在 PostgreSQL 中扮演著重要的角色，它決定了資料庫如何顯示和處理貨幣值。這個設定會影響到貨幣符號、小數點的位置、千分位分隔符等格式。 
+  
+    ```
+    SET lc_monetary = 'zh_TW.UTF-8';
+    ```
+  2. 建立資料表    
+    ```
+    CREATE TABLE accounts (
+        id SERIAL PRIMARY KEY,
+        balance money
+    );
+    ```
+  3. 新增資料    
+    ```
+    INSERT INTO accounts (balance) VALUES (100);
+    SELECT * FROM accounts;
+    ```
+  4. 查詢結果
 
 #### PostgreSQL 資料型別說明
 
