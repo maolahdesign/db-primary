@@ -982,6 +982,7 @@ JOIN Instructors i ON c.InstructorID = i.InstructorID;
 | id | 學員記錄唯一識別碼 |
 | user_id | 會員 ID |
 | course_id | 課程 ID |
+| progress_rate | 課程完成度 |
 | status | 學員狀態 (例如：已報名、已完成、未完成) |
 | created | 學員記錄創建時間 |
 

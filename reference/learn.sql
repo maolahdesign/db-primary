@@ -25,6 +25,7 @@
 | price | DECIMAL(10,2) | 課程價格 |
 | instructor | VARCHAR(255) | 課程講師 |
 | image | VARCHAR(255) | 課程封面圖片 URL |
+| url | VARCHAR(255) | 課程 URL |
 | created | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 課程創建時間 |
 | updated | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 課程更新時間 |
 
@@ -35,6 +36,7 @@
 | id | SERIAL PRIMARY KEY | 學員記錄唯一識別碼 |
 | user_id | INTEGER REFERENCES users(id) | 會員 ID |
 | course_id | INTEGER REFERENCES courses(id) | 課程 ID |
+| progress_rate | INTEGER DEFAULT 0 | 課程完成度 |
 | status | VARCHAR(255) | 學員狀態 (例如：已報名、已完成、未完成) |
 | created | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 學員記錄創建時間 |
 
@@ -48,6 +50,7 @@
 | rating | INTEGER | 評分 (例如：1-5 星) |
 | comment | TEXT | 評論內容 |
 | created | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 評論創建時間 |
+
 
 -- 1. 會員資料表 (users)
 CREATE TABLE users (
@@ -93,3 +96,47 @@ CREATE TABLE reviews (
     comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+CREATE TABLE product (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    attributes JSONB -- 儲存產品屬性
+  );
+
+INSERT INTO course (name, attributes)
+VALUES (
+'css primary', 
+'{
+    "course": "課程一",
+    "takeout":["tk1","tk2","tk3"],
+    "target":["tg1","tg2","tg3"],
+    "restrictions":["html", "css", "javascript"]
+    "sections": [
+        {
+          "section": "第一節",
+          "url": "https://troie.pro/c01",
+          "srt_url": "https://troie.pro/c01"
+        },
+        {
+          "section": "第二節",
+          "url": "https://troie.pro/c02",
+          "srt_url": "https://troie.pro/c02"
+        },
+        {
+          "section": "第三節",
+          "url": "https://troie.pro/c02",
+          "srt_url": "https://troie.pro/c03"
+        }
+    ]
+}
+'
+);
+
+SELECT
+    attributes->>'course' AS course,
+    section->>'section' AS section,
+    section->>'url' AS url
+FROM
+    product,
+    jsonb_array_elements(attributes->'sections') AS section;
