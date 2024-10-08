@@ -338,6 +338,7 @@ PostgreSQL 是一個功能強大且靈活的資料庫系統，其架構設計基
    - 繪製 ERD 圖表，這是一個圖形化的工具，用於表示資料實體和它們之間的關聯。實體-關係圖有助於可視化資料結構，確保每個資料實體及其之間的關聯都清楚定義。
    - 在設計 ERD 時，還需要考慮每個實體的主鍵和外鍵，確保它們之間的關係正確反映在圖中。
      
+
 ![ERD](image/er.png)
 
 #### 5. **資料正規化 (Normalization)**
@@ -413,7 +414,7 @@ select 1.123456789::bigint as num4;
  ```
  select sum(0.1::numeric(2,2)) from generate_series(1,10);
  ```
- 
+
  1. 新增資料表 **table_numbers**
    - col_numeric numeric(20, 5)
    - col_real real
@@ -455,15 +456,16 @@ select 1.123456789::bigint as num4;
  ```
  3. 使用幾個新函數：
   > ** length()**：這個函數用來計算字串的長度，計算的是字元數，具體根據 tag 中的字元編碼來確定長度。
-  
+
   > ** octet_length(p)**：計算字串的位元組（byte）數，也就是該字串在資料庫中實際佔用的位元組數量。
-  
+
   ```
   select pk,tag,length(tag),octet_length(tag) from new_tags;
   ```
  ##### 換你
   1. 刪除 new_tags
   2. 建立新表單 new_tags
+
     - pk integer not null primary key,
     - tag varchar(10)
   3. 新增幾筆資料
@@ -555,7 +557,7 @@ INSERT INTO files (filename, data) VALUES ('image.jpg', E'\\x42696E6172792064617
   - 可讀性: 使用易於理解的文字表示資料，提高資料的可讀性。
   - 索引效率: ENUM 型別的資料通常會被索引，提高查詢效率。
   - 代碼維護: 減少硬編碼的值，提高代碼的可維護性。
-  
+
 1. 建立列舉型別
 ```
 CREATE TYPE mood AS ENUM ('happy', 'sad', 'neutral');
@@ -571,7 +573,7 @@ color color
 );
 ```
 3. 新增資料
- 
+
 ENUM 型別的範例：
 - 使用者狀態: user_status AS ENUM ('active', 'inactive', 'deleted')
 - 產品類別: product_category AS ENUM ('electronics', 'clothing', 'food')
@@ -579,10 +581,68 @@ ENUM 型別的範例：
 - 付款方式: payment_method AS ENUM ('credit_card', 'paypal', 'bank_transfer')
 
 #### 7. **JSON 與 XML 型別**
-- `json`: 存儲 JSON 格式的數據，但沒有強制檢查格式正確性。
-- `jsonb`: 二進制 JSON，存儲結構化的 JSON，支援更高效的查詢和索引。
+專門用來儲存 JSON 格式的資料。它們允許以結構化的方式存儲和查詢 JSON 資料。這兩種型別的主要區別在於儲存的方式和效能表現：
+
+- `json`：存儲原始的 JSON 資料，保留其原始格式，會保留空格、順序等內容。每次查詢時需要重新解析。
+- `jsonb`：存儲已解析的二進位格式，順序、空格等無法保留，但效能較好，尤其在進行檢索和索引時。
 - `xml`: 用於存儲 XML 資料。
 
+為什麼使用 JSON 型別：
+- 靈活性：適合儲存不規則的或動態的資料結構，例如無固定欄位的資料。
+- 結合結構化資料：可以在關聯資料庫中，同時使用結構化資料表和 JSON 格式的半結構化資料。
+- 索引和效能：JSONB 支持索引，並能快速檢索 JSON 內部的資料。
+
+  1. 建立資料表
+  ```
+  CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    attributes JSONB
+  );
+  ```
+  2. 新增資料
+  ```
+  INSERT INTO products (name, attributes)
+  VALUES (
+    'Laptop', 
+    '{
+      "brand": "Apple", "model": "MacBook Pro", "price": 2500, 
+      "specs": {"ram": "16GB", "storage": "512GB"}
+    }'
+  );
+  ```
+  3. 讀取資料
+  你可以使用 -> 和 ->> 運算子來提取 JSON 資料。
+
+  - ->：提取 JSON 物件中的子物件。
+  - ->>：提取子物件中的純文本值。
+  ```
+  SELECT name, attributes->'brand', attributes->'model' AS brand
+  FROM products;
+  
+  
+  SELECT name, attributes->'specs'->>'ram' AS ram
+  FROM products;
+  ```
+  4. 更新資料
+  ```
+  UPDATE products
+  SET attributes = jsonb_set(attributes, '{price}', '2700')
+  WHERE name = 'Laptop';
+  ```
+  
+  5. 換你
+     - 新增一筆紀錄
+       - pc
+         - brand: asus
+         - model: 個人電腦
+         - price: 23456
+       - spacs
+         - ram: 8G
+         - storage: 256G
+     - 讀取新增資料名稱及 model
+     - 將 ram 修改成 18G
+       
 #### 8. **陣列型別**
 - PostgreSQL 支援陣列類型，任何資料型別都可以存儲為陣列。例如：
 
@@ -638,7 +698,7 @@ ENUM 型別的範例：
  SET DEFAULT uuid_generate_v4();
  ```
  6. 新增幾筆紀錄
-       
+    
 
 #### 10. **CIDR 和 INET 型別**
    - `cidr`: 用於存儲 IP 網段。
@@ -661,12 +721,14 @@ ENUM 型別的範例：
    - `tstzrange`: 有時區的時間範圍。
    - `daterange`: 日期範圍。
 
-#### 13. **金錢型別**
+#### 13. **貨幣型別**
 - `money`: 專門用於儲存貨幣金額，它能夠精確地表示貨幣值，並考慮到不同貨幣的格式和精度。
 
 為什麼使用 money 型別？
 - 精確計算: 避免浮點數計算可能產生的精度問題，確保貨幣計算的準確性。
+
 - 格式化輸出: 可以根據不同的區域設定，自動格式化輸出貨幣值，例如加上貨幣符號、千分位分隔符等。
+
 - 內建貨幣功能: PostgreSQL 提供了許多內建函數，方便進行貨幣計算和比較。
 
   1. 設定 lc_monetary 
@@ -675,6 +737,13 @@ ENUM 型別的範例：
     ```
     SET lc_monetary = 'zh_TW.UTF-8';
     ```
+  
+    常見的區域設定範例
+    - 美式英語：en_US.UTF-8
+    - 德語：de_DE.UTF-8
+    - 法語：fr_FR.UTF-8
+    - 中文：zh_CN.UTF-8 或 zh_TW.UTF-8
+  
   2. 建立資料表    
     ```
     CREATE TABLE accounts (
@@ -688,7 +757,7 @@ ENUM 型別的範例：
     SELECT * FROM accounts;
     ```
   4. 查詢結果
-
+---
 #### PostgreSQL 資料型別說明
 
 | 資料型別             | 描述           | 長度限制                                    | 預設值  | 說明                                                        |
@@ -723,63 +792,6 @@ ENUM 型別的範例：
 這些是 PostgreSQL 中常見的資料型別，提供了靈活的數據處理和儲存選擇。你可以根據具體應用的需求選擇最合適的型別來構建資料表。
 
 ---
-
-## 使用 PostgreSQL 線上教學網站會員管理及課程管理資料表規劃
-完成線上教學網站的會員管理及課程管理資料表(schema)：
-
-**1. 會員資料表 (users)**
-
-| 字段名稱 | 資料類型 | 說明 |
-|---|---|---|
-| id | SERIAL PRIMARY KEY | 會員唯一識別碼 |
-| username | VARCHAR(255) UNIQUE NOT NULL | 會員帳號 |
-| email | VARCHAR(255) UNIQUE NOT NULL | 會員電子郵件地址 |
-| password | VARCHAR(255) NOT NULL | 會員密碼 (建議使用哈希加密) |
-| name | VARCHAR(255) | 會員姓名 |
-| avatar | VARCHAR(255) | 會員頭像 URL |
-| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 會員註冊時間 |
-| updated_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 會員資料更新時間 |
-
-**2. 課程資料表 (courses)**
-
-| 字段名稱 | 資料類型 | 說明 |
-|---|---|---|
-| id | SERIAL PRIMARY KEY | 課程唯一識別碼 |
-| title | VARCHAR(255) NOT NULL | 課程標題 |
-| description | TEXT | 課程描述 |
-| category | VARCHAR(255) | 課程類別 |
-| price | DECIMAL(10,2) | 課程價格 |
-| instructor | VARCHAR(255) | 課程講師 |
-| image | VARCHAR(255) | 課程封面圖片 URL |
-| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 課程創建時間 |
-| updated_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 課程更新時間 |
-
-**3. 課程學員資料表 (enrollments)**
-
-| 字段名稱 | 資料類型 | 說明 |
-|---|---|---|
-| id | SERIAL PRIMARY KEY | 學員記錄唯一識別碼 |
-| user_id | INTEGER REFERENCES users(id) | 會員 ID |
-| course_id | INTEGER REFERENCES courses(id) | 課程 ID |
-| status | VARCHAR(255) | 學員狀態 (例如：已報名、已完成、未完成) |
-| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 學員記錄創建時間 |
-
-**4. 課程評論資料表 (reviews)**
-
-| 字段名稱 | 資料類型 | 說明 |
-|---|---|---|
-| id | SERIAL PRIMARY KEY | 評論唯一識別碼 |
-| user_id | INTEGER REFERENCES users(id) | 會員 ID |
-| course_id | INTEGER REFERENCES courses(id) | 課程 ID |
-| rating | INTEGER | 評分 (例如：1-5 星) |
-| comment | TEXT | 評論內容 |
-| created_at | TIMESTAMP DEFAULT CURRENT_TIMESTAMP | 評論創建時間 |
-
-**備註:**
-* 確保資料庫表結構和資料類型符合您的應用程式需求。
-* 使用安全措施保護敏感資料，例如密碼哈希加密。
-
----
 ## 資料庫正規化
 
 在設計一個教學網站的資料庫時，我們可以使用**PostgreSQL**，並遵循資料庫的**1NF（一階正規化）**、**2NF（二階正規化）** 和 **3NF（三階正規化）** 的規則來設計和優化資料表。以下是每個正規化階段的範例演進。
@@ -795,16 +807,16 @@ ENUM 型別的範例：
 
 | StudentID | StudentName | CourseID | CourseName          | Instructor  | EnrollmentDate        |
 |-----------|-------------|----------|---------------------|-------------|-----------------------|
-| 1         | John Smith  | 101      | Web Development      | Jane Doe    | 2023-01-01            |
-| 1         | John Smith  | 102      | Database Systems     | John Carter | 2023-01-02            |
-| 2         | Alice Brown | 101      | Web Development      | Jane Doe    | 2023-01-05            |
+| 1         | 王小明 | 101      | 網頁開發      | 潘冬瓜    | 2024-10-01         |
+| 1         | 王小明 | 102      | Database Systems     | 王阿花 | 2024-10-02         |
+| 2         | 盧小小 | 101      | 網頁開發  | 潘冬瓜 | 2024-10-05         |
 
 在此表中：
 - 學生和課程的資訊重複。
 - 學生選擇多個課程時，學生名字會被重複列出。
 
 #### 一階正規化（1NF）：
-確保每一列的數據是原子性的，不包含多值欄位。
+確保每一列的數據是原子性的，**不包含多值欄位**。
 
 ```sql
 CREATE TABLE Enrollments (
@@ -930,28 +942,152 @@ JOIN Instructors i ON c.InstructorID = i.InstructorID;
 - 提高了數據完整性。
 - 容易進行數據更新和維護，避免數據異常情況（如不同記錄中相同學生的名字拼寫不同）。
 
+## 使用 PostgreSQL 線上教學網站會員管理及課程管理資料表規劃
+完成線上教學網站的會員管理及課程管理資料表(schema)：
+
+**1. 會員資料表 (users)**
+
+| 字段名稱 | 資料類型 | 
+|---|---|
+| id | 會員唯一識別碼 |
+| username | 會員帳號 |
+| email | 會員電子郵件地址 |
+| password | 會員密碼 (建議使用哈希加密) |
+| name | 會員姓名 |
+| nikename | 會員暱稱 |
+| avatar | 會員頭像 URL |
+| status | 會員頭像 URL |
+| activation key | 會員驗證碼 |
+| registered | 會員註冊時間 |
+| updated | 會員資料更新時間 |
+
+**2. 課程資料表 (courses)**
+
+| 字段名稱 | 資料類型 | 
+|---|---|
+| id | 課程唯一識別碼 |
+| course name | 課程標題 |
+| description | 課程描述 |
+| category | 課程類別 |
+| price | 課程價格 |
+| instructor | 課程講師 |
+| image | 課程封面圖片 URL |
+| created | 課程創建時間 |
+| updated | 課程更新時間 |
+
+**3. 課程學員資料表 (enrollments)**
+
+| 字段名稱 | 資料類型 | 
+|---|---|
+| id | 學員記錄唯一識別碼 |
+| user_id | 會員 ID |
+| course_id | 課程 ID |
+| status | 學員狀態 (例如：已報名、已完成、未完成) |
+| created | 學員記錄創建時間 |
+
+**4. 課程評論資料表 (reviews)**
+
+| 字段名稱 | 資料類型 | 
+|---|---|
+| id | 評論唯一識別碼 |
+| user_id | 會員 ID |
+| course_id | 課程 ID |
+| rating | 評分 (例如：1-5 星) |
+| comment | 評論內容 |
+| created | 評論創建時間 |
+
+**備註:**
+* 確保資料庫表結構和資料類型符合您的應用程式需求。
+* 使用安全措施保護敏感資料，例如密碼哈希加密。
+
 ---
 ## 安全性
-## 命令列管理工具
-CREATE USER username WITH PASSWORD 'password';
-CREATE DATABASE dbname WITH OWNER 'username';
 
-commend
-- \d+ users 檢視資料表 schema
-- psql 檢視資料表 users
-
-```
-DROP TABLE users;
-
-CREATE TABLE users(
-    id SERIAL,
-    name VARCHAR(128),
-    email VARCHAR(128) UNIQUE,
-    PRIMARY KEY(id)
-)
-```
-- get last insert row or id.
 ## 備份、復原與特定點復原
+
+### 為什麼要備份 PostgreSQL 資料庫？
+
+* **資料安全:** 防止意外刪除、硬體故障、軟體錯誤等導致的資料丟失。
+* **災難恢復:** 在發生重大災難時，能夠快速恢復資料庫服務。
+* **版本控制:** 可以將資料庫恢復到任意時間點的狀態。
+
+### PostgreSQL 提供的備份方式
+
+* **物理備份:**
+    * **pg_basebackup:** 產生一個資料庫叢集的邏輯備份，包括所有資料和 WAL 日誌。
+    * **檔案系統快照:** 對於支持檔案系統快照的操作系統，可以對整個資料庫目錄進行快照。
+* **邏輯備份:**
+    * **pg_dump:** 將資料庫中的資料以 SQL 腳本的形式導出。
+
+### 備份策略
+
+* **完整備份:** 定期進行一次完整的物理備份，作為基礎備份。
+* **增量備份:** 在完整備份的基礎上，定期備份新增或修改的數據。
+* **WAL 備份:** 持續備份 WAL 日誌，用於進行特定點復原。
+
+### 復原
+
+* **物理備份復原:**
+    * 使用 `pg_restore` 命令將物理備份恢復到一個新的資料庫。
+* **邏輯備份復原:**
+    * 使用 `psql` 命令執行導出的 SQL 腳本。
+* **特定點復原:**
+    * 基於物理備份和 WAL 日誌，將資料庫恢復到指定的時間點。
+
+### 特定點復原 (Point-in-Time Recovery, PITR)
+
+* **原理:**
+    通過 replay WAL 日誌，將資料庫恢復到任意一個一致性狀態。
+* **步驟:**
+    1. 停止資料庫服務。
+    2. 將備份檔案和 WAL 日誌複製到新的位置。
+    3. 修改 `postgresql.conf` 檔案，配置恢復目標時間點。
+    4. 啟動資料庫，進行恢復。
+* **工具:**
+    * `pg_basebackup` 和 `pg_walreplay` 命令可以實現 PITR。
+
+### 備份策略建議
+
+* **定期備份:** 建立一個合理的備份計劃，定期進行完整備份和增量備份。
+* **保留多個備份:** 保留足夠的備份，以應對不同的故障情況。
+* **測試備份:** 定期進行備份恢復測試，確保備份有效。
+* **考慮雲端備份:** 將備份資料存儲到雲端，提高數據安全性。
+
+### 示例：使用 pg_dump 和 pg_restore 進行備份和復原
+
+```bash
+# 備份
+pg_dump -U postgres mydatabase > mydatabase.dump
+
+# 復原
+dropdb mydatabase;
+createdb mydatabase;
+pg_restore -d mydatabase mydatabase.dump
+```
+
+### 注意事項
+
+* **WAL 日誌的管理:** WAL 日誌會不斷產生，需要定期清理。
+* **備份存儲:** 選擇可靠的存儲介質，並定期檢查備份的完整性。
+* **測試環境:** 建議建立一個獨立的測試環境，用於測試備份和復原。
+
+### 更多高級功能
+
+* **流式備份:** 可以將備份數據直接傳輸到遠端伺服器。
+* **壓縮備份:** 可以對備份數據進行壓縮，節省存儲空間。
+* **加密備份:** 可以對備份數據進行加密，提高安全性。
+
+### 總結
+
+PostgreSQL 提供了多種備份和復原方式，以滿足不同的需求。通過合理的備份策略和工具的使用，可以有效地保護資料庫的安全性。
+
+**建議:**
+
+* **根據業務需求選擇合適的備份方式:** 對於頻繁變化的數據，可以選擇增量備份；對於安全性要求高的數據，可以考慮加密備份。
+* **定期測試備份:** 確保備份有效，並及時發現和解決問題。
+* **參考官方文檔:** PostgreSQL 官方文檔提供了更詳細的備份和復原指南。
+
+
 ## 日常的管理工作
 ## 資料字典
 ## 載入與搬移資料
