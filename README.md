@@ -4,6 +4,7 @@
 - [PG SQL](https://pg-sql.com/)
 - [Postgres.app](https://postgresapp.com/)
 - [DiagramGPT](https://www.eraser.io/diagramgpt?source=post_page-----1b10079b9b5f--------------------------------)
+- [PostgresQL 中文手冊](https://docs.postgresql.tw/16)
 
 ## 資料庫是什麼
 
@@ -25,7 +26,7 @@ CREATE TABLE users (
 ```
 
 ```
-NSERT INTO table_name VALUES (value1, value2, value3, ...);
+INSERT INTO table_name VALUES (value1, value2, value3, ...);
 ```
 
 ```
@@ -758,7 +759,7 @@ ENUM 型別的範例：
     ```
   4. 查詢結果
 ---
-#### PostgreSQL 資料型別說明
+#### PostgreSQL 資料型別簡表
 
 | 資料型別             | 描述           | 長度限制                                    | 預設值  | 說明                                                        |
 | -------------------- | -------------- | ------------------------------------------- | ------- | ----------------------------------------------------------- |
@@ -790,6 +791,79 @@ ENUM 型別的範例：
 
 
 這些是 PostgreSQL 中常見的資料型別，提供了靈活的數據處理和儲存選擇。你可以根據具體應用的需求選擇最合適的型別來構建資料表。
+
+---
+## PostgreSQL 常用函數
+
+### 字串函數
+
+1. `CONCAT(string1, string2, ...)`: 連接字串
+   - 例: `SELECT CONCAT('Hello', ' ', 'World');` 結果: 'Hello World'
+
+2. `LOWER(string)`: 轉換為小寫
+   - 例: `SELECT LOWER('HELLO');` 結果: 'hello'
+
+3. `UPPER(string)`: 轉換為大寫
+   - 例: `SELECT UPPER('hello');` 結果: 'HELLO'
+
+4. `LENGTH(string)`: 返回字串長度
+   - 例: `SELECT LENGTH('hello');` 結果: 5
+
+5. `SUBSTRING(string, start, length)`: 擷取子字串
+   - 例: `SELECT SUBSTRING('hello world', 1, 5);` 結果: 'hello'
+
+### 數值函數
+
+1. `ABS(number)`: 絕對值
+   - 例: `SELECT ABS(-10);` 結果: 10
+
+2. `ROUND(number, decimals)`: 四捨五入
+   - 例: `SELECT ROUND(3.14159, 2);` 結果: 3.14
+
+3. `CEIL(number)`: 向上取整
+   - 例: `SELECT CEIL(3.1);` 結果: 4
+
+4. `FLOOR(number)`: 向下取整
+   - 例: `SELECT FLOOR(3.9);` 結果: 3
+
+### 日期時間函數
+
+1. `CURRENT_DATE`: 當前日期
+   - 例: `SELECT CURRENT_DATE;`
+
+2. `CURRENT_TIME`: 當前時間
+   - 例: `SELECT CURRENT_TIME;`
+
+3. `CURRENT_TIMESTAMP`: 當前日期和時間
+   - 例: `SELECT CURRENT_TIMESTAMP;`
+
+4. `DATE_TRUNC(unit, timestamp)`: 日期時間截斷
+   - 例: `SELECT DATE_TRUNC('hour', TIMESTAMP '2001-02-16 20:38:40');` 結果: '2001-02-16 20:00:00'
+
+### 轉換函數
+
+1. `CAST(expression AS type)`: 類型轉換
+   - 例: `SELECT CAST('100' AS INTEGER);` 結果: 100
+
+2. `TO_CHAR(value, format)`: 將數值或日期轉換為字串
+   - 例: `SELECT TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD');`
+
+### 聚合函數
+
+1. `COUNT(*)`: 計數
+   - 例: `SELECT COUNT(*) FROM users;`
+
+2. `SUM(column)`: 求和
+   - 例: `SELECT SUM(price) FROM products;`
+
+3. `AVG(column)`: 平均值
+   - 例: `SELECT AVG(age) FROM employees;`
+
+4. `MAX(column)`: 最大值
+   - 例: `SELECT MAX(salary) FROM employees;`
+
+5. `MIN(column)`: 最小值
+   - 例: `SELECT MIN(price) FROM products;`
 
 ---
 ## 資料庫正規化
@@ -843,6 +917,12 @@ CREATE TABLE Enrollments (
 我們將資料分拆成兩個表：一個是關於學生的表，另一個是關於課程的表，然後使用第三個表來表示註冊關係。
 
 1. **Students 表**
+
+| StudentID | StudentName |
+|-----------|-------------|
+| 1         | John Smith  |
+| 2         | Alice Brown |
+
 ```sql
 CREATE TABLE Students (
     StudentID INT PRIMARY KEY,
@@ -851,6 +931,12 @@ CREATE TABLE Students (
 ```
 
 2. **Courses 表**
+
+| CourseID | CourseName          | Instructor  |
+|----------|---------------------|-------------|
+| 101      | Web Development      | Jane Doe    |
+| 102      | Database Systems     | John Carter |
+
 ```sql
 CREATE TABLE Courses (
     CourseID INT PRIMARY KEY,
@@ -860,6 +946,13 @@ CREATE TABLE Courses (
 ```
 
 3. **Enrollments 表**
+
+| StudentID | CourseID | EnrollmentDate        |
+|-----------|----------|-----------------------|
+| 1         | 101      | 2023-01-01            |
+| 1         | 102      | 2023-01-02            |
+| 2         | 101      | 2023-01-05            |
+
 ```sql
 CREATE TABLE Enrollments (
     StudentID INT,
@@ -884,6 +977,12 @@ CREATE TABLE Enrollments (
 我們再將講師資訊拆分出來，這樣就不會有傳遞依賴。
 
 1. **Instructors 表**
+
+| InstructorID | InstructorName | Email           | Office    |
+|--------------|----------------|-----------------|-----------|
+| 1            | John Smith     | hello@coocle.com| Facebook  |
+| 2            | Alice Brown    | troie@wow.com   | Googl     |
+
 ```sql
 CREATE TABLE Instructors (
     InstructorID INT PRIMARY KEY,
@@ -894,6 +993,12 @@ CREATE TABLE Instructors (
 ```
 
 2. **Courses 表（更新後）**
+
+| CourseID | CourseName          | InstructorID  |
+|----------|---------------------|-------------|
+| 101      | Web Development     | 1  |
+| 102      | Database Systems    | 2 |
+
 ```sql
 CREATE TABLE Courses (
     CourseID INT PRIMARY KEY,
@@ -947,7 +1052,7 @@ JOIN Instructors i ON c.InstructorID = i.InstructorID;
 
 **1. 會員資料表 (users)**
 
-| 字段名稱 | 資料類型 | 
+| 欄位名稱 | 資料類型 |
 |---|---|
 | id | 會員唯一識別碼 |
 | username | 會員帳號 |
@@ -963,7 +1068,7 @@ JOIN Instructors i ON c.InstructorID = i.InstructorID;
 
 **2. 課程資料表 (courses)**
 
-| 字段名稱 | 資料類型 | 
+| 欄位名稱 | 資料類型 |
 |---|---|
 | id | 課程唯一識別碼 |
 | course name | 課程標題 |
@@ -977,7 +1082,7 @@ JOIN Instructors i ON c.InstructorID = i.InstructorID;
 
 **3. 課程學員資料表 (enrollments)**
 
-| 字段名稱 | 資料類型 | 
+| 欄位名稱 | 資料類型 |
 |---|---|
 | id | 學員記錄唯一識別碼 |
 | user_id | 會員 ID |
@@ -988,7 +1093,7 @@ JOIN Instructors i ON c.InstructorID = i.InstructorID;
 
 **4. 課程評論資料表 (reviews)**
 
-| 字段名稱 | 資料類型 | 
+| 欄位名稱 | 資料類型 |
 |---|---|
 | id | 評論唯一識別碼 |
 | user_id | 會員 ID |
@@ -1002,8 +1107,138 @@ JOIN Instructors i ON c.InstructorID = i.InstructorID;
 * 使用安全措施保護敏感資料，例如密碼哈希加密。
 
 ---
-## 安全性
+## 載入與搬移資料
+1. 修改原始資料檔
+   ```受僱員工人數、每人薪資-專業、科學及技術服務業.csv```
+2. 建立資料表
+  ```
+  CREATE TABLE report (
+      id INT PRIMARY KEY,                      -- 自動遞增唯一識別碼
+      annual INT NOT NULL,                     -- 年度 (如 2024)
+      occupation VARCHAR(64) NOT NULL,         -- 職業名稱
+      industry VARCHAR(16) NOT NULL,           -- 產業類別
+      employee INT,                            -- 員工人數 (不得為負數)
+      salary NUMERIC(10, 2),                   -- 月薪，精確到小數點兩位
+      annual_salary NUMERIC(12, 2)             -- 年薪，精確到小數點兩位
+  );
+  ```
+3. 匯入資料
+   ```data.csv```
+4. 確認匯入結果
+  ```
+  SELECT * FROM report;
+  ```
 
+  ```
+  SELECT * FROM report 
+  WHERE occupation LIKE '%資訊%' 
+  ORDER BY salary DESC;
+  ```
+
+## 安全性
+### 1. 身份驗證
+
+#### 方法：
+- 密碼認證
+- LDAP
+- Kerberos
+- 證書認證
+- PAM（可插拔認證模塊）
+
+#### 最佳實踐：
+- 使用強密碼策略
+- 定期更換密碼
+- 使用 SSL/TLS 加密連接
+
+### 2. 訪問控制
+
+#### 特性：
+- 基於角色的訪問控制 (RBAC)
+- 行級安全 (RLS)
+- 列級安全
+
+#### 最佳實踐：
+- 遵循最小權限原則
+- 使用角色來管理權限
+- 對敏感數據實施行級安全
+
+### 3. 網絡安全
+
+#### 配置：
+- 限制數據庫監聽地址 (`listen_addresses`)
+- 使用防火牆限制訪問
+
+#### 最佳實踐：
+- 只允許必要的 IP 地址訪問數據庫
+- 使用 VPN 或 SSH 隧道進行遠程訪問
+
+### 4. 數據加密
+
+#### 方法：
+- 傳輸層加密 (SSL/TLS)
+- 數據加密儲存（通過擴展如 pgcrypto）
+
+#### 最住實踐：
+- 為所有連接啟用 SSL/TLS
+- 對敏感數據使用列級加密
+
+### 5. 審計
+
+#### 特性：
+- 詳細的日誌記錄
+- 擴展如 pgaudit 提供更詳細的審計功能
+
+#### 最佳實踐：
+- 啟用適當級別的日誌記錄
+- 定期審查日誌
+- 使用審計工具監控敏感操作
+
+### 6. 應用層安全
+
+#### 實踐：
+- 使用參數化查詢防止 SQL 注入
+- 適當處理錯誤訊息，避免信息洩露
+- 使用連接池管理數據庫連接
+
+### 7. 備份和恢復
+
+#### 策略：
+- 定期自動備份
+- 加密備份數據
+- 測試恢復過程
+
+#### 最佳實踐：
+- 將備份存儲在安全的異地位置
+- 實施時間點恢復 (PITR) 能力
+
+### 8. 系統安全
+
+#### 實踐：
+- 及時更新 PostgreSQL 到最新的安全版本
+- 限制對數據�器服器的物理訪問
+- 加強操作系統安全性
+
+### 9. 配置安全
+
+#### 設置：
+- 禁用不必要的擴展和功能
+- 正確配置 `pg_hba.conf` 和 `postgresql.conf`
+
+#### 最佳實踐：
+- 定期審查和更新配置
+- 使用安全掃描工具檢查配置漏洞
+
+### 10. 監控和警報
+
+#### 方法：
+- 設置性能和安全監控
+- 配置異常行為警報
+
+#### 最佳實踐：
+- 使用監控工具持續監視數據庫活動
+- 設置自動警報系統應對安全事件
+
+---
 ## 備份、復原與特定點復原
 
 ### 為什麼要備份 PostgreSQL 資料庫？
@@ -1087,9 +1322,4 @@ PostgreSQL 提供了多種備份和復原方式，以滿足不同的需求。通
 * **根據業務需求選擇合適的備份方式:** 對於頻繁變化的數據，可以選擇增量備份；對於安全性要求高的數據，可以考慮加密備份。
 * **定期測試備份:** 確保備份有效，並及時發現和解決問題。
 * **參考官方文檔:** PostgreSQL 官方文檔提供了更詳細的備份和復原指南。
-
-
-## 日常的管理工作
-## 資料字典
-## 載入與搬移資料
 

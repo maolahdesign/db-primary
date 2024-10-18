@@ -762,6 +762,8 @@ CREATE TABLE Students (
 );
 ```
 
+
+
 2. **Courses 表**
 ```sql
 CREATE TABLE Courses (
@@ -770,6 +772,7 @@ CREATE TABLE Courses (
     Instructor VARCHAR(100)
 );
 ```
+
 
 3. **Enrollments 表**
 ```sql
@@ -805,6 +808,8 @@ CREATE TABLE Instructors (
 );
 ```
 
+
+
 2. **Courses 表（更新後）**
 ```sql
 CREATE TABLE Courses (
@@ -814,6 +819,7 @@ CREATE TABLE Courses (
     FOREIGN KEY (InstructorID) REFERENCES Instructors(InstructorID)
 );
 ```
+
 
 3. **Students 表**
 保持不變。
@@ -879,4 +885,6 @@ CREATE TABLE users(
 ## 日常的管理工作
 ## 資料字典
 ## 載入與搬移資料
+
+
 
