@@ -17,9 +17,9 @@
 
 #### SQL 數據庫結構
 
-```sql
+```
 CREATE TABLE users (
-    id INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100),
     age INT,
     email VARCHAR(100)
@@ -34,9 +34,9 @@ CREATE TABLE users (
     email VARCHAR(100)
 );
 ```
+
 ```
-INSERT INTO table_name VALUES (value1, value2, value3, ...);
-INSERT INTO users VALUES ()
+INSERT INTO users (name, age, email) VALUES ('annie','33','annie@gmail.com');
 ```
 
 ```
