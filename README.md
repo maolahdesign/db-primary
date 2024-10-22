@@ -17,6 +17,7 @@
 
 #### SQL 數據庫結構
 
+**postgresQL**
 ```
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -25,7 +26,7 @@ CREATE TABLE users (
     email VARCHAR(100)
 );
 ```
-
+**SQL Server**
 ```
 CREATE TABLE users (
     id INT IDENTITY PRIMARY KEY,
@@ -34,7 +35,15 @@ CREATE TABLE users (
     email VARCHAR(100)
 );
 ```
-
+**SQLite**
+```
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(100),
+    age INT,
+    email VARCHAR(100)
+);
+```
 ```
 INSERT INTO users (name, age, email) VALUES ('annie','33','annie@gmail.com');
 ```
