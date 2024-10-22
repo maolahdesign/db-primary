@@ -15,9 +15,9 @@
 
 一個 NoSQL 數據庫的特性是**靈活的數據結構**。以 MongoDB 為例，它使用文檔導向的數據模型，允許以 JSON 類似的格式儲存數據。這裡是一個範例：
 
-#### SQL 數據庫結構
+#### SQL 資料結構
 
-**postgresQL**
+**PostgreSQL**
 ```
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -67,7 +67,7 @@ DROP TABLE table_name
 CASCADE;
 ```
 
-#### NoSQL（MongoDB）數據結構
+#### NoSQL（MongoDB）資料結構
 ```json
 {
     "_id": "1",
